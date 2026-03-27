@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
+import threading
 import FileReader
 import Visualize_Graph
+import GoogleAPI
 
 # Color palette
 BG         = "#F0F4F8"
@@ -105,6 +107,88 @@ def _stat_card(parent, label, value, color):
              bg=CARD_BG, fg=color).pack(anchor="w")
 
 
+def open_chat(parent, df):
+    chat_win = tk.Toplevel(parent)
+    chat_win.title("AI Finance Assistant")
+    chat_win.geometry("620x520")
+    chat_win.configure(bg=BG)
+    chat_win.resizable(False, False)
+
+    # Header
+    hdr = tk.Frame(chat_win, bg=HEADER_BG, height=50)
+    hdr.pack(fill="x")
+    hdr.pack_propagate(False)
+    tk.Label(hdr, text="AI Finance Assistant", font=("Helvetica", 13, "bold"),
+             bg=HEADER_BG, fg="white").pack(expand=True)
+
+    # Chat history
+    history_frame = tk.Frame(chat_win, bg=CARD_BG, padx=12, pady=8)
+    history_frame.pack(fill="both", expand=True, padx=16, pady=(12, 6))
+
+    scrollbar = ttk.Scrollbar(history_frame)
+    scrollbar.pack(side="right", fill="y")
+
+    chat_display = tk.Text(
+        history_frame, wrap="word", state="disabled",
+        font=("Helvetica", 10), bg=CARD_BG, fg=TEXT_DARK,
+        relief="flat", yscrollcommand=scrollbar.set
+    )
+    chat_display.pack(fill="both", expand=True)
+    scrollbar.config(command=chat_display.yview)
+
+    chat_display.tag_configure("user_tag",  foreground=ACCENT,   font=("Helvetica", 10, "bold"))
+    chat_display.tag_configure("ai_tag",    foreground=SUCCESS,   font=("Helvetica", 10, "bold"))
+    chat_display.tag_configure("body_tag",  foreground=TEXT_DARK, font=("Helvetica", 10))
+    chat_display.tag_configure("error_tag", foreground=DANGER,    font=("Helvetica", 10))
+
+    def append_message(sender, message, tag):
+        chat_display.config(state="normal")
+        chat_display.insert("end", f"{sender}\n", tag)
+        chat_display.insert("end", f"{message}\n\n", "body_tag")
+        chat_display.config(state="disabled")
+        chat_display.see("end")
+
+    # Input area
+    input_frame = tk.Frame(chat_win, bg=BG, pady=8)
+    input_frame.pack(fill="x", padx=16, pady=(0, 12))
+
+    entry = tk.Entry(
+        input_frame, font=("Helvetica", 11), bg=CARD_BG,
+        fg=TEXT_DARK, relief="flat", bd=6
+    )
+    entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(0, 8))
+
+    def send_question():
+        question = entry.get().strip()
+        if not question:
+            return
+        entry.delete(0, "end")
+        append_message("You:", question, "user_tag")
+        send_btn.config(state="disabled", text="Thinking...")
+
+        def call_api():
+            try:
+                answer = GoogleAPI.ask_finance_question(question, df)
+                chat_display.after(0, lambda: append_message("AI Assistant:", answer, "ai_tag"))
+            except Exception as e:
+                chat_display.after(0, lambda: append_message("Error:", str(e), "error_tag"))
+            finally:
+                send_btn.after(0, lambda: send_btn.config(state="normal", text="Send"))
+
+        threading.Thread(target=call_api, daemon=True).start()
+
+    send_btn = tk.Button(
+        input_frame, text="Send", command=send_question,
+        bg=ACCENT, fg="white", font=("Helvetica", 10, "bold"),
+        relief="flat", cursor="hand2", padx=16, pady=6, bd=0,
+        activebackground=ACCENT_DK, activeforeground="white"
+    )
+    send_btn.pack(side="left")
+
+    entry.bind("<Return>", lambda e: send_question())
+    entry.focus()
+
+
 def mainWindow(window, df):
     window.geometry(f"{window.winfo_screenwidth()}x{window.winfo_screenheight()}")
     window.configure(bg=BG)
@@ -117,6 +201,16 @@ def mainWindow(window, df):
     tk.Label(header, text="Personal Finance  Dashboard",
              font=("Helvetica", 15, "bold"),
              bg=HEADER_BG, fg="white").pack(side="left", padx=24)
+
+    ai_btn = tk.Button(
+        header, text="✦ AI Assistant", command=lambda: open_chat(window, df),
+        bg="#F6AD55", fg="#1A202C", font=("Helvetica", 10, "bold"),
+        relief="flat", cursor="hand2", padx=16, pady=6, bd=0,
+        activebackground="#ED8936", activeforeground="#1A202C"
+    )
+    ai_btn.pack(side="right", padx=20)
+    ai_btn.bind("<Enter>", lambda e: ai_btn.config(bg="#ED8936"))
+    ai_btn.bind("<Leave>", lambda e: ai_btn.config(bg="#F6AD55"))
 
     # ── Summary cards ───────────────────────────────────────────────────
     total_income = df[df['Amount'] > 0]['Amount'].sum()
