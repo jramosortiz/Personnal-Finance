@@ -42,11 +42,7 @@ Language
                   
   - No database — data lives in .xlsx files (Chase bank        
   exports) and in-memory pandas DataFrames at runtime
-                                                               
-  ---             
-  Summary: Pure Python app, tkinter for UI, pandas for data,
-  Gemini AI for intelligence, Excel files as the data source.  
-
+     
 
 ---
 ### Requirements
