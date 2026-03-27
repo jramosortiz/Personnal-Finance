@@ -9,6 +9,43 @@ graphs, summaries, and actionable financial advice.
 ---
 
 ## Tools
+Language                                                     
+                                                               
+  - Python 3.12                                                
+                                                               
+  GUI                                                          
+                                                               
+  - tkinter + ttk — all UI components, dialogs, file pickers   
+  - matplotlib + FigureCanvasTkAgg — charts embedded in the GUI
+                                                               
+  Data                                                         
+                                                               
+  - pandas — data manipulation and analysis
+  - openpyxl — reading .xlsx Excel files
+                                                               
+  AI / External API                                            
+                                                               
+  - Google Gemini API (gemini-2.5-flash) via google.genai —    
+  transaction categorization + finance Q&A assistant
+                                                               
+  Config          
+
+  - python-dotenv — loads GEMINI_API_KEY from .env             
+   
+  Dev Tools                                                    
+                  
+  - Git — version control
+  - PyCharm (JetBrains) — IDE (.idea/ config present)
+  - threading — async AI calls so UI doesn't freeze            
+   
+  Data Storage                                                 
+                  
+  - No database — data lives in .xlsx files (Chase bank        
+  exports) and in-memory pandas DataFrames at runtime
+                                                               
+  ---             
+  Summary: Pure Python app, tkinter for UI, pandas for data,
+  Gemini AI for intelligence, Excel files as the data source.  
 
 
 ---
