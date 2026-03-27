@@ -42,7 +42,20 @@ def categorize_expense(df):
         print(f"Description: {row['Description']}")
         print(f"Current Category: {df.at[index,'Category']}")
 
-
-
     return df
 
+def AI_Agent(request):
+    # Suppress unnecessary Google SDK warnings
+    logging.getLogger('google').setLevel(logging.WARNING)
+    logging.getLogger('absl').setLevel(logging.ERROR)
+
+    # Configure Gemini API
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel("gemini-2.5-flash")
+
+    response = model.generate_content(request + "make sure is simple anought ")
+
+    print(response.text)
+
+
+AI_Agent('Help get into my goal by the end of the year. My goal is to save 5000 dollards. I get pay every 2 weeks for example I get payed today around 1230 $.')
