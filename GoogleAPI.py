@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 import logging
 import os
 from dotenv import load_dotenv
@@ -16,8 +16,7 @@ def categorize_expense(df):
     logging.getLogger('absl').setLevel(logging.ERROR)
 
     # Configure Gemini API
-    genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel("gemini-2.5-flash")
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     uncategorized = df[df['Category'] == 'Uncategorized'][['Description', 'Category']]
 
@@ -32,8 +31,9 @@ def categorize_expense(df):
         print(f"Description: {row['Description']}")
         print(f"Current Category: {row['Category']}")
         #Send API CALL and Receive the Results
-        response = model.generate_content(
-            f"Categorize: {row['Description']} into  Housing,Transportation,Food,Utilities,Insurance,Medical/Healthcare,Personal,"
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"Categorize: {row['Description']} into  Housing,Transportation,Food,Utilities,Insurance,Medical/Healthcare,Personal,"
             f"Debt,Savings,Gifts/Donations,Entertainment,Miscellaneous,Transportation, Transfer, Bills, Education"
             f"only give me the answer no need for explanation.",)
         #Replace it with the new category
